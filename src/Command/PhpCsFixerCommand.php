@@ -10,7 +10,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
-use League\CLImate\CLImate;
 use StaticReview\Reporter\Reporter;
 use StaticReview\Issue\Issue;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -43,17 +42,16 @@ class PhpCsFixerCommand extends Command
         $fileCollection = $fileCollection->append($file);
 
         $reporter = new Reporter($output, 1);
-        $climate = new CLImate();
 
         $review = new StaticReview($reporter);
         $review->addReview(new PhpCsFixerReview(self::AUTO_ADD_GIT));
 
         // Review the staged files.
-        $review->review($fileCollection);
+        $review->files($fileCollection);
 
         // Check if any matching issues were found.
         if ($reporter->hasIssues()) {
-            $reporter->displayReport($climate);
+            $reporter->displayReport();
         }
 
         if ($reporter->hasIssueLevel(Issue::LEVEL_ERROR)) {

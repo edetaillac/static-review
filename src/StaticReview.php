@@ -79,7 +79,7 @@ class StaticReview
     /**
      * Adds a Review to be run.
      *
-     * @param ReviewInterface $check
+     * @param ReviewInterface $review
      *
      * @return StaticReview
      */
@@ -93,7 +93,7 @@ class StaticReview
     /**
      * Appends a ReviewCollection to the current list of reviews.
      *
-     * @param ReviewCollection $checks
+     * @param ReviewCollection $reviews
      *
      * @return StaticReview
      */
@@ -111,7 +111,7 @@ class StaticReview
      *
      * @return StaticReview
      */
-    public function review(FileCollection $files)
+    public function files(FileCollection $files)
     {
         foreach ($files as $key => $file) {
             $this->getReporter()->progress($key + 1, count($files));

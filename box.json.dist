@@ -3,14 +3,10 @@
     "directories": [
         "src"
     ],
-    "files": [
-        "LICENSE",
-        "vendor/herrera-io/phar-update/res/schema.json"
-    ],
     "finder": [
         {
             "name": "*.php",
-            "exclude": ["Tests"],
+            "exclude": ["bin", "doctrine", "phpdocumentor", "phpspec", "sebastian", "phpunit", "mockery", "Tests"],
             "in": "vendor"
         }
     ],

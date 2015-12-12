@@ -19,14 +19,12 @@ use StaticReview\Review\YML\YmlLintReview;
 use StaticReview\Review\XML\XmlLintReview;
 use StaticReview\Review\JS\JsStopWordsReview;
 use StaticReview\Review\GIT\GitConflictReview;
-use StaticReview\Review\GIT\NoCommitTagReview;
 use StaticReview\StaticReview;
 use StaticReview\VersionControl\GitVersionControl;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use League\CLImate\CLImate;
 use StaticReview\Reporter\Reporter;
 use StaticReview\Issue\Issue;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -43,6 +41,7 @@ class PreCommitCommand extends Command
         $this
           ->setName('check')->setDescription('Scan and check all files added to commit')
           ->addOption('phpunit', null, InputOption::VALUE_OPTIONAL, 'Phpunit feature state')
+          ->addOption('phpunit-bin-path', null, InputOption::VALUE_OPTIONAL, 'Phpunit bin path')
           ->addOption('phpunit-conf', null, InputOption::VALUE_OPTIONAL, 'Phpunit conf path');
     }
 
@@ -57,7 +56,6 @@ class PreCommitCommand extends Command
         $stagedFiles = $git->getStagedFiles();
         $projectBase = $git->getProjectBase();
         $reporter = new Reporter($output, count($stagedFiles));
-        $climate = new CLImate();
 
         $review = new StaticReview($reporter);
         $review->addReview(new PhpLintReview())
@@ -68,14 +66,13 @@ class PreCommitCommand extends Command
           ->addReview(new YmlLintReview())
           ->addReview(new JsonLintReview())
           ->addReview(new XmlLintReview())
-          ->addReview(new GitConflictReview())
-          ->addReview(new NoCommitTagReview())
-          ->addReview(new ScssLintReview());
+          ->addReview(new GitConflictReview());
 
         // --------------------------------------------------------
         // Front Dev profile
         // --------------------------------------------------------
-        //$review->addReview(new SassConvertFixerReview(self::AUTO_ADD_GIT));
+        /*$review->addReview(new ScssLintReview())
+          ->addReview(new SassConvertFixerReview(self::AUTO_ADD_GIT));*/
 
         // --------------------------------------------------------
         // Dev PHP profile
@@ -90,27 +87,29 @@ class PreCommitCommand extends Command
           ->addReview($phpCodeSniffer);
         // --------------------------------------------------------
 
-        $review->review($stagedFiles);
+        $review->files($stagedFiles);
 
+        $reporter->displayReport();
+
+        $postReporter = new Reporter($output, 0);
         // --------------------------------------------------------
         // Dev PHP profile
         // --------------------------------------------------------
-        $postCmd = new PostCmd($reporter);
-        if ($input->getOption('phpunit')) {
-            $postCmd->addReview(new PhpUnitReview($input->getOption('phpunit-conf'), $projectBase));
+        if (!$reporter->hasIssueLevel(Issue::LEVEL_ERROR) && count($stagedFiles) > 0) {
+            $postCmd = new PostCmd($postReporter);
+            if ($input->getOption('phpunit')) {
+                $postCmd->addReview(new PhpUnitReview($input->getOption('phpunit-bin-path'), $input->getOption('phpunit-conf'), $projectBase));
+            }
+            $postCmd->review();
+
+            $postReporter->displayReport();
         }
-        $postCmd->review();
         // --------------------------------------------------------
 
-        // Check if any matching issues were found.
-        if ($reporter->hasIssues()) {
-            $reporter->displayReport($climate);
-        }
-
-        if ($reporter->hasIssueLevel(Issue::LEVEL_ERROR)) {
+        if ($reporter->hasIssueLevel(Issue::LEVEL_ERROR) || $postReporter->hasIssueLevel(Issue::LEVEL_ERROR)) {
             $io->error('✘ Please fix the errors above or use --no-verify.');
             exit(1);
-        } elseif ($reporter->hasIssueLevel(Issue::LEVEL_WARNING)) {
+        } elseif ($reporter->hasIssueLevel(Issue::LEVEL_WARNING) || $postReporter->hasIssueLevel(Issue::LEVEL_WARNING)) {
             $io->note('Try to fix warnings !');
         } else {
             $io->success('✔ Looking good.');

@@ -10,6 +10,8 @@ abstract class AbstractReview implements ReviewInterface
 {
     const ERROR_MSG_TYPE = 'error';
 
+    protected $availableCommands;
+
     /**
      * Check is file is reviewable.
      *
@@ -107,12 +109,16 @@ abstract class AbstractReview implements ReviewInterface
      */
     protected function checkCommand($command)
     {
+        if (isset($this->availableCommands[$command])) {
+            return $this->availableCommands[$command];
+        }
+
         $process = new Process(sprintf('which %s', $command));
         $process->run();
         if (!$process->isSuccessful()) {
-            return false;
+            return $this->availableCommands[$command] = false;
         }
 
-        return true;
+        return $this->availableCommands[$command] = true;
     }
 }

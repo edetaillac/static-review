@@ -3,6 +3,7 @@
 namespace StaticReview;
 
 use StaticReview\Collection\ReviewCollection;
+use StaticReview\File\File;
 use StaticReview\Reporter\ReporterInterface;
 
 class PostCmd
@@ -13,6 +14,11 @@ class PostCmd
     protected $reviews;
     protected $reporter;
 
+    /**
+     * Constructor.
+     *
+     * @param ReporterInterface $reporter
+     */
     public function __construct(ReporterInterface $reporter)
     {
         $this->reviews = new ReviewCollection();
@@ -43,11 +49,19 @@ class PostCmd
         return $this;
     }
 
+    /**
+     * @return ReviewCollection
+     */
     public function getReviews()
     {
         return $this->reviews;
     }
 
+    /**
+     * @param $review
+     *
+     * @return $this
+     */
     public function addReview($review)
     {
         $this->reviews->append($review);
@@ -55,6 +69,11 @@ class PostCmd
         return $this;
     }
 
+    /**
+     * @param ReviewCollection $reviews
+     *
+     * @return $this
+     */
     public function addReviews(ReviewCollection $reviews)
     {
         foreach ($reviews as $review) {
@@ -64,10 +83,17 @@ class PostCmd
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function review()
     {
+        if (count($this->getReviews()) > 0) {
+            $this->getReporter()->displayMsg(' <fg=cyan>Post check in progress...</>');
+        }
+
         foreach ($this->getReviews() as $key => $review) {
-            $review->review($this->getReporter(), null);
+            $review->review($this->getReporter(), new File('', '', ''));
         }
 
         return $this;

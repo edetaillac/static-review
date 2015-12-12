@@ -6,7 +6,6 @@ use StaticReview\Collection\IssueCollection;
 use StaticReview\File\FileInterface;
 use StaticReview\Issue\Issue;
 use StaticReview\Review\ReviewInterface;
-use League\CLImate\CLImate;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -16,6 +15,7 @@ class Reporter implements ReporterInterface
     protected $progress;
     protected $total;
     protected $current;
+    protected $output;
 
     /**
      * Initializes a new instance of the Reporter class.
@@ -28,10 +28,10 @@ class Reporter implements ReporterInterface
     public function __construct(OutputInterface $output, $total)
     {
         $this->issues = new IssueCollection();
-        $climate = new CLImate();
+        $this->output = $output;
 
         if ($total > 1) {
-            $climate->br();
+            $this->output->writeln('');
             ProgressBar::setFormatDefinition('minimal', ' <fg=cyan>Reviewing file %current% of %max%.</>');
             $this->progress = new ProgressBar($output, $total);
             $this->progress->setFormat('minimal');
@@ -207,6 +207,8 @@ class Reporter implements ReporterInterface
     }
 
     /**
+     * Check if IssueLevel is reached in IssueCollection.
+     *
      * @return bool
      */
     public function hasIssueLevel($level)
@@ -221,31 +223,43 @@ class Reporter implements ReporterInterface
     }
 
     /**
-     * @param $climate
+     * Display report.
      */
-    public function displayReport($climate)
+    public function displayReport()
     {
-        $climate->br();
-        $this->displayIssues($this->getIssues(true, Issue::LEVEL_INFO), $climate);
-        $this->displayIssues($this->getIssues(true, Issue::LEVEL_WARNING), $climate);
-        $this->displayIssues($this->getIssues(true, Issue::LEVEL_ERROR), $climate);
+        if (isset($this->progress)) {
+            $this->output->writeln('');
+        }
+        $this->displayIssues($this->getIssues(true, Issue::LEVEL_INFO));
+        $this->displayIssues($this->getIssues(true, Issue::LEVEL_WARNING));
+        $this->displayIssues($this->getIssues(true, Issue::LEVEL_ERROR));
     }
 
     /**
-     * @param $issues
-     * @param $climate
+     * @param IssueCollection $issues
      */
-    public function displayIssues($issues, $climate)
+    public function displayIssues($issues)
     {
         $lastReviewName = '';
 
         foreach ($issues as $issue) {
-            $colorMethod = $issue->getColour();
             if ($lastReviewName == '' || $lastReviewName != $issue->getReviewName()) {
-                $climate->br()->$colorMethod()->out(' '.$issue->getReviewName().' :');
+                $this->output->writeln('');
+                $this->output->writeln(sprintf(' <fg=%s>%s :</>', $issue->getColour(), $issue->getReviewName()));
                 $lastReviewName = $issue->getReviewName();
             }
-            $climate->$colorMethod($issue);
+            $this->output->writeln(sprintf('<fg=%s>%s</>', $issue->getColour(), $issue));
         }
+    }
+
+    /**
+     * Display simple message.
+     *
+     * @param $message
+     */
+    public function displayMsg($message)
+    {
+        $this->output->writeln('');
+        $this->output->writeln($message);
     }
 }

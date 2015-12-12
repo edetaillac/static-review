@@ -6,7 +6,6 @@ use StaticReview\VersionControl\GitVersionControl;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -35,36 +34,41 @@ class HookInstallCommand extends Command
         $git = new GitVersionControl();
         $projectBase = $git->getProjectBase();
 
-        $helper = $this->getHelperSet()->get('question');
-
         $phpunit = $io->confirm('Enable PhpUnit ?', true);
-
-        $phpunitPath = '';
-        if ($phpunit) {
-            $question = new Question('Specify Phpunit config path [example: app] ? (leave blank if not needed): ', '');
-            $phpunitPath = $helper->ask($input, $output, $question);
-        }
 
         $source = realpath($projectBase);
         $hookDir = $source.'/.git/hooks';
+        $defaultPhpUnitConfFile = $source.'/'.self::PHPUNIT_DEFAULT_CONF_FILENAME;
+
+        $precommitCommand = sprintf('precommit check%s', $phpunit ? ' --phpunit true' : '');
+
+        if ($phpunit) {
+            $phpunitPath = $io->ask('Specify Phpunit bin path [example: vendor/bin/phpunit] ? : ', 'phpunit');
+            $phpunitConfFile = $io->ask('Specify Phpunit config file path ? : ', $defaultPhpUnitConfFile);
+
+            if ($phpunitPath != '') {
+                if (strpos($phpunitPath, '/') !== false) {
+                    $phpunitPath = $source.'/'.$phpunitPath;
+                    if (!is_file($phpunitPath)) {
+                        $io->error(sprintf('No phpunit bin found "%s"', $phpunitPath));
+                        exit(1);
+                    }
+                }
+            }
+
+            if (!is_file($phpunitConfFile)) {
+                $io->error(sprintf('No phpunit conf file found "%s"', $phpunitConfFile));
+                exit(1);
+            }
+
+            $precommitCommand .= ($phpunitPath != 'phpunit') ? ' --phpunit-bin-path '.$phpunitPath : '';
+            $precommitCommand .= ($phpunitConfFile != $defaultPhpUnitConfFile) ? ' --phpunit-conf '.$phpunitConfFile : '';
+        }
 
         if (!is_dir($hookDir)) {
             $io->error(sprintf('The git hook directory does not exist (%s)', $hookDir));
             exit(1);
         }
-
-        $precommitCommand = sprintf('precommit check%s', $phpunit ? ' --phpunit true' : '');
-        if ($phpunitPath != '') {
-            $phpunitPath .= (substr($phpunitPath, -1) != '/') ? '/' : '';
-            $phpunitConfFile = $source.'/'.$phpunitPath.self::PHPUNIT_DEFAULT_CONF_FILENAME;
-            if (!is_file($phpunitConfFile)) {
-                $io->error(sprintf('No phpunit conf file found "%s"', $phpunitConfFile));
-                exit(1);
-            }
-        }
-
-        $output->writeln('');
-        $precommitCommand .= ($phpunitPath != '') ? ' --phpunit-conf '.$phpunitPath : '';
 
         $target = $hookDir.'/pre-commit';
         $fs = new Filesystem();

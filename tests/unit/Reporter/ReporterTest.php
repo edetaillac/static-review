@@ -26,12 +26,15 @@ class ReporterTest extends TestCase
 
     protected $reporter;
 
+    protected $output;
+
     public function setUp()
     {
         $this->review = Mockery::mock('StaticReview\Review\ReviewInterface');
         $this->file = Mockery::mock('StaticReview\File\FileInterface');
+        $this->output = Mockery::mock('Symfony\Component\Console\Output\OutputInterface');
 
-        $this->reporter = new Reporter();
+        $this->reporter = new Reporter($this->output, 1);
     }
 
     public function testReport()

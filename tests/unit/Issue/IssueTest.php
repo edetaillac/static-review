@@ -218,8 +218,6 @@ class IssueTest extends TestCase
         // Replace common punctuation with spaces for a better explode.
         $issueStringTokens = explode(' ', str_replace([',', '.', ':', ';'], ' ', $issueString));
 
-        $this->assertContains($this->issue->getReviewName(), $issueStringTokens);
-        $this->assertContains($this->issue->getLevelName(), $issueStringTokens);
         $this->assertContains($this->issue->getMessage(), $issueStringTokens);
         $this->assertContains($this->issue->getSubject()->getRelativePath(), $issueStringTokens);
     }
