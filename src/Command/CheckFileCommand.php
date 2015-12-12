@@ -25,7 +25,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
-use League\CLImate\CLImate;
 use StaticReview\Reporter\Reporter;
 use StaticReview\Issue\Issue;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -64,7 +63,6 @@ class CheckFileCommand extends Command
         $fileCollection = $fileCollection->append($file);
 
         $reporter = new Reporter($output, 1);
-        $climate = new CLImate();
 
         $review = new StaticReview($reporter);
         $review->addReview(new PhpLintReview())
@@ -76,13 +74,14 @@ class CheckFileCommand extends Command
           ->addReview(new JsonLintReview())
           ->addReview(new XmlLintReview())
           ->addReview(new GitConflictReview())
-          ->addReview(new NoCommitTagReview())
-          ->addReview(new ScssLintReview());
+          ->addReview(new NoCommitTagReview());
 
         // --------------------------------------------------------
         // Front Dev profile
         // --------------------------------------------------------
-        //$review->addReview(new SassConvertFixerReview(self::AUTO_ADD_GIT));
+        /*$review->addReview(new ScssLintReview())
+          ->addReview(new SassConvertFixerReview(self::AUTO_ADD_GIT));*/
+
 
         // --------------------------------------------------------
         // Dev PHP profile
@@ -98,12 +97,9 @@ class CheckFileCommand extends Command
         // --------------------------------------------------------
 
         // Review the staged files.
-        $review->review($fileCollection);
+        $review->files($fileCollection);
 
-        // Check if any matching issues were found.
-        if ($reporter->hasIssues()) {
-            $reporter->displayReport($climate);
-        }
+        $reporter->displayReport();
 
         if ($reporter->hasIssueLevel(Issue::LEVEL_ERROR)) {
             $io->error('✘ Please fix the errors above or use --no-verify.');

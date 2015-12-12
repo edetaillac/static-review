@@ -1,7 +1,7 @@
-Pre-Commit
+Web/PHP Pre-Commit
 =====================
 
-Precommit Tools to lint/review/clean all your files (php/js/scss/xml/json/scss)
+PHP Precommit Tools to lint/review/clean all your web files (php/js/scss/xml/yml/json)
 
 Based on https://github.com/sjparkinson/static-review
 
@@ -81,6 +81,7 @@ After the installation, you can execute "precommit" command to:
 > * **checkFile [file]** : Execute pre-commit checks on single file
 > * **php-cs-fixer [file]** : Execute php-cs-fixer rule on single file
 > * **install** : Install pre-commit hook on your current project
+> * **delete** : Delete pre-commit hook on your current project
 > * **listRepo [workspace_path]** : Analyse all git projects to get pre-commit informations
 
 

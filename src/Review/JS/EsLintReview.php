@@ -30,11 +30,7 @@ class EsLintReview extends AbstractReview
      */
     public function canReview(ReviewableInterface $file = null)
     {
-        if (!$this->checkCommand('eslint')) {
-            return false;
-        }
-
-        return parent::canReview($file) && $file->getExtension() === 'js';
+        return parent::canReview($file) && $file->getExtension() === 'js' && (strpos($file->getName(), '.min.js') === false) && $this->checkCommand('eslint');
     }
 
     /**

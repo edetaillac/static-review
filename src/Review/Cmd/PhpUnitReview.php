@@ -5,6 +5,7 @@ namespace StaticReview\Review\Cmd;
 use StaticReview\Reporter\ReporterInterface;
 use StaticReview\Review\AbstractReview;
 use StaticReview\Review\ReviewableInterface;
+use Symfony\Component\Process\Process;
 
 class PhpUnitReview extends AbstractReview
 {
@@ -14,11 +15,13 @@ class PhpUnitReview extends AbstractReview
     /**
      * Constructor.
      *
+     * @param $phpUnitBinPath
      * @param $phpUnitConfigPath
      * @param $projectBase
      */
-    public function __construct($phpUnitConfigPath, $projectBase)
+    public function __construct($phpUnitBinPath, $phpUnitConfigPath, $projectBase)
     {
+        $this->phpUnitBinPath = $phpUnitBinPath ? $phpUnitBinPath : 'phpunit';
         $this->phpUnitConfigPath = $phpUnitConfigPath;
         $this->projectBase = $projectBase;
     }
@@ -30,15 +33,25 @@ class PhpUnitReview extends AbstractReview
      */
     public function review(ReporterInterface $reporter, ReviewableInterface $file = null)
     {
-        $cmd = sprintf('phpunit --stop-on-failure%s', $this->phpUnitConfigPath ? ' -c '.$this->phpUnitConfigPath : '');
+        $cmd = sprintf('%s --stop-on-failure%s', $this->phpUnitBinPath, $this->phpUnitConfigPath ? ' -c '.$this->phpUnitConfigPath : '');
         $process = $this->getProcess($cmd, $this->projectBase, null, null, 360);
-        $process->run();
+
+        echo "\n ";
+        $process->run(function ($type, $buffer) {
+            if (Process::ERR !== $type) {
+                if (in_array($buffer, array('.', 'F', 'E', 'R', 'S', 'I'))) {
+                    echo $buffer;
+                }
+            }
+        });
+        echo "\n";
+
         if (preg_match('|Usage: phpunit|i', $process->getOutput())) {
-            $reporter->error('You must specify Phpunit config path [--phpunit-conf PATH].', $this, null);
+            $reporter->error('You must specify Phpunit config path [--phpunit-conf PATH].', $this, $file);
         } elseif ($this->phpUnitConfigPath && !is_dir($this->projectBase.'/'.$this->phpUnitConfigPath)) {
-            $reporter->error('Phpunit config path is not correct.', $this, null);
+            $reporter->error('Phpunit config path is not correct.', $this, $file);
         } elseif (!$process->isSuccessful()) {
-            $reporter->error('Fix the Unit Tests !!!', $this, null);
+            $reporter->error('Fix the Unit Tests !!!', $this, $file);
         }
     }
 }

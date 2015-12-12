@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install Pre-commit script for linux (debian/ubuntu)
+# Install Pre-commit script for linux (debian/ubuntu) - Usage of apt-get
 
 # =============================
 # INSTALL composer
