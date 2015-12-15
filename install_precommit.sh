@@ -26,17 +26,6 @@ EOF
 fi
 
 # =============================
-# INSTALL jsonlint
-# =============================
-
-if ! type jsonlint > /dev/null; then
-echo "JsonLint install..."
-sudo bash <<EOF
-	apt-get install jsonlint
-EOF
-fi
-
-# =============================
 # INSTALL nodejs & npm & Eslint
 # =============================
 
@@ -83,11 +72,35 @@ fi
 # Composer dependencies
 # =============================
 
+if ! type phpcpd > /dev/null; then
+echo "phpcpd install..."
 composer global require 'sebastian/phpcpd=*'
+fi
+
+if ! type php-cs-fixer > /dev/null; then
+echo "php-cs-fixer install..."
 composer global require 'fabpot/php-cs-fixer @stable'
+fi
+
+if ! type phpmd > /dev/null; then
+echo "phpmd install..."
 composer global require 'phpmd/phpmd=@stable'
+fi
+
+if ! type box > /dev/null; then
+echo "box install..."
 composer global require 'kherge/box=2.5.*'
+fi
+
+if ! type phpcs > /dev/null; then
+echo "php_codesniffer install..."
 composer global require 'squizlabs/php_codesniffer=2.*'
+fi
+
+if ! type jsonlint > /dev/null; then
+echo "jsonlint install..."
+composer global require 'seld/jsonlint=@stable'
+fi
 
 COMPOSERPATH=${HOME}/.composer/vendor/bin
 
