@@ -32,12 +32,16 @@ class JsStopWordsReview extends AbstractReview
         $stopWordsJs = array(
           'console.debug()' => 'console.debug',
           'console.log()'   => 'console.log',
-          'alert()'         => "[^a-zA-Z]alert\(",
+          'alert()'         => '[^a-zA-Z]alert(',
         );
 
         // Check StopWords
         foreach ($stopWordsJs as $key => $word) {
-            if (preg_match('|'.$word.'|i', file_get_contents($file->getFullPath()))) {
+            $cmd = sprintf('grep --ignore-case --quiet \'%s\' %s', $word, $file->getFullPath());
+            $process = $this->getProcess($cmd);
+            $process->run();
+
+            if ($process->isSuccessful()) {
                 $reporter->error(sprintf('expr "%s" detected', $key), $this, $file);
             }
         }

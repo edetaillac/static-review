@@ -4,11 +4,12 @@ namespace StaticReview\Command;
 
 use StaticReview\Collection\FileCollection;
 use StaticReview\File\File;
+use StaticReview\Review\Composer\ComposerLintReview;
 use StaticReview\Review\JS\EsLintReview;
 use StaticReview\Review\JSON\JsonLintReview;
 use StaticReview\Review\PHP\PhpLintReview;
 use StaticReview\Review\PHP\PhpCsFixerReview;
-use StaticReview\Review\PHP\ComposerReview;
+use StaticReview\Review\Composer\ComposerLockReview;
 use StaticReview\Review\PHP\PhpCodeSnifferReview;
 use StaticReview\Review\PHP\PhpStopWordsReview;
 use StaticReview\Review\PHP\PhpCPDReview;
@@ -65,9 +66,10 @@ class CheckFileCommand extends Command
         $reporter = new Reporter($output, 1);
 
         $review = new StaticReview($reporter);
-        $review->addReview(new PhpLintReview())
+        $review->addReview(new ComposerLockReview())
+          ->addReview(new ComposerLintReview())
+          ->addReview(new PhpLintReview())
           ->addReview(new PhpStopWordsReview())
-          ->addReview(new ComposerReview())
           ->addReview(new JsStopWordsReview())
           ->addReview(new EsLintReview(self::AUTO_ADD_GIT))
           ->addReview(new YmlLintReview())
@@ -81,7 +83,6 @@ class CheckFileCommand extends Command
         // --------------------------------------------------------
         /*$review->addReview(new ScssLintReview())
           ->addReview(new SassConvertFixerReview(self::AUTO_ADD_GIT));*/
-
 
         // --------------------------------------------------------
         // Dev PHP profile

@@ -20,19 +20,19 @@ class XmlLintReview extends AbstractReview
         return parent::canReview($file) && $file->getExtension() === 'xml';
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function review(ReporterInterface $reporter, ReviewableInterface $file = null)
     {
         $cmd = sprintf('xmllint --noout %s', $file->getFullPath());
         $process = $this->getProcess($cmd);
         $process->run();
-        $output = array_filter(explode(PHP_EOL, $process->getErrorOutput()));
-        $needle = 'XML Parse error:  syntax error, ';
         if (!$process->isSuccessful()) {
-            foreach ($output as $error) {
-                $raw = ucfirst(substr($error, strlen($needle)));
-                $message = str_replace(' in '.$file->getFullPath(), '', $raw);
-                $reporter->error($message, $this, $file);
-            }
+            $output = $process->getErrorOutput();
+            preg_match('/:([0-9]+):/i', $output, $matches);
+            $line = isset($matches[1]) ? $matches[1] : null;
+            $reporter->error('Unable to parse the XML file', $this, $file, $line);
         }
     }
 }

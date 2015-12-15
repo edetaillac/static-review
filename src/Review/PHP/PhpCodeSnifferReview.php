@@ -80,7 +80,7 @@ class PhpCodeSnifferReview extends AbstractReview
      */
     public function review(ReporterInterface $reporter, ReviewableInterface $file = null)
     {
-        $cmd = '~/.composer/vendor/bin/phpcs --report=json ';
+        $cmd = 'phpcs --report=json ';
 
         if ($this->getOptionsForConsole()) {
             $cmd .= $this->getOptionsForConsole();
@@ -102,9 +102,8 @@ class PhpCodeSnifferReview extends AbstractReview
             };
 
             foreach (array_reduce($output['files'], $filter, []) as $error) {
-                $message = $error['message'];
                 if ($error['message'] == 'Missing function doc comment') {
-                    $reporter->error($message, $this, $file, $error['line']);
+                    $reporter->error('Missing PHPDoc function doc comment', $this, $file, $error['line']);
                 }
             }
         }

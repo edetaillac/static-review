@@ -3,10 +3,9 @@
 namespace StaticReview;
 
 use StaticReview\Collection\ReviewCollection;
-use StaticReview\File\File;
 use StaticReview\Reporter\ReporterInterface;
 
-class PostCmd
+class TestingReview
 {
     /**
      * A ReviewCollection.
@@ -89,11 +88,11 @@ class PostCmd
     public function review()
     {
         if (count($this->getReviews()) > 0) {
-            $this->getReporter()->displayMsg(' <fg=cyan>Post check in progress...</>');
+            $this->getReporter()->displayMsg(' <fg=cyan>Tests in progress...</>');
         }
 
-        foreach ($this->getReviews() as $key => $review) {
-            $review->review($this->getReporter(), new File('', '', ''));
+        foreach ($this->getReviews() as $review) {
+            $review->review($this->getReporter());
         }
 
         return $this;

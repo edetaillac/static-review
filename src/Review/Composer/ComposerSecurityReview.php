@@ -44,9 +44,7 @@ class ComposerSecurityReview extends AbstractReview
      */
     public function review(ReporterInterface $reporter, ReviewableInterface $file)
     {
-        $executable = 'vendor/bin/security-checker';
-
-        $cmd = sprintf('%s security:check %s', $executable, $file->getFullPath());
+        $cmd = sprintf('security-checker security:check %s', $file->getFullPath());
 
         $process = $this->getProcess($cmd);
         $process->run();

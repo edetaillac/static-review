@@ -2,13 +2,13 @@
 
 namespace StaticReview\Command;
 
-use StaticReview\PostCmd;
 use StaticReview\Review\Cmd\PhpUnitReview;
+use StaticReview\Review\Composer\ComposerLintReview;
 use StaticReview\Review\JS\EsLintReview;
 use StaticReview\Review\JSON\JsonLintReview;
 use StaticReview\Review\PHP\PhpLintReview;
 use StaticReview\Review\PHP\PhpCsFixerReview;
-use StaticReview\Review\PHP\ComposerReview;
+use StaticReview\Review\Composer\ComposerLockReview;
 use StaticReview\Review\PHP\PhpStopWordsReview;
 use StaticReview\Review\PHP\PhpCPDReview;
 use StaticReview\Review\PHP\PhpMDReview;
@@ -20,6 +20,7 @@ use StaticReview\Review\XML\XmlLintReview;
 use StaticReview\Review\JS\JsStopWordsReview;
 use StaticReview\Review\GIT\GitConflictReview;
 use StaticReview\StaticReview;
+use StaticReview\TestingReview;
 use StaticReview\VersionControl\GitVersionControl;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -58,9 +59,10 @@ class PreCommitCommand extends Command
         $reporter = new Reporter($output, count($stagedFiles));
 
         $review = new StaticReview($reporter);
-        $review->addReview(new PhpLintReview())
+        $review->addReview(new ComposerLockReview())
+          ->addReview(new ComposerLintReview())
+          ->addReview(new PhpLintReview())
           ->addReview(new PhpStopWordsReview())
-          ->addReview(new ComposerReview())
           ->addReview(new JsStopWordsReview())
           ->addReview(new EsLintReview(self::AUTO_ADD_GIT))
           ->addReview(new YmlLintReview())
@@ -91,25 +93,25 @@ class PreCommitCommand extends Command
 
         $reporter->displayReport();
 
-        $postReporter = new Reporter($output, 0);
+        $testingReporter = new Reporter($output, 0);
         // --------------------------------------------------------
         // Dev PHP profile
         // --------------------------------------------------------
         if (!$reporter->hasIssueLevel(Issue::LEVEL_ERROR) && count($stagedFiles) > 0) {
-            $postCmd = new PostCmd($postReporter);
+            $testingReview = new TestingReview($testingReporter);
             if ($input->getOption('phpunit')) {
-                $postCmd->addReview(new PhpUnitReview($input->getOption('phpunit-bin-path'), $input->getOption('phpunit-conf'), $projectBase));
+                $testingReview->addReview(new PhpUnitReview($input->getOption('phpunit-bin-path'), $input->getOption('phpunit-conf'), $projectBase));
             }
-            $postCmd->review();
+            $testingReview->review();
 
-            $postReporter->displayReport();
+            $testingReporter->displayReport();
         }
         // --------------------------------------------------------
 
-        if ($reporter->hasIssueLevel(Issue::LEVEL_ERROR) || $postReporter->hasIssueLevel(Issue::LEVEL_ERROR)) {
+        if ($reporter->hasIssueLevel(Issue::LEVEL_ERROR) || $testingReporter->hasIssueLevel(Issue::LEVEL_ERROR)) {
             $io->error('✘ Please fix the errors above or use --no-verify.');
             exit(1);
-        } elseif ($reporter->hasIssueLevel(Issue::LEVEL_WARNING) || $postReporter->hasIssueLevel(Issue::LEVEL_WARNING)) {
+        } elseif ($reporter->hasIssueLevel(Issue::LEVEL_WARNING) || $testingReporter->hasIssueLevel(Issue::LEVEL_WARNING)) {
             $io->note('Try to fix warnings !');
         } else {
             $io->success('✔ Looking good.');

@@ -26,13 +26,17 @@ class PhpStopWordsReview extends AbstractReview
     public function review(ReporterInterface $reporter, ReviewableInterface $file = null)
     {
         $stopWordsPhp = array(
-          'var_dump()' => "[^a-zA-Z]var_dump\(",
-          'die()'      => "[^a-zA-Z]die\(",
+            'var_dump()' => '[^a-zA-Z]var_dump(',
+            'die()'      => '[^a-zA-Z]die(',
         );
 
         // Check StopWords
         foreach ($stopWordsPhp as $key => $word) {
-            if (preg_match('|'.$word.'|i', file_get_contents($file->getFullPath()))) {
+            $cmd = sprintf('grep --ignore-case --quiet \'%s\' %s', $word, $file->getFullPath());
+            $process = $this->getProcess($cmd);
+            $process->run();
+
+            if ($process->isSuccessful()) {
                 $reporter->error(sprintf('expr "%s" detected', $key), $this, $file);
             }
         }

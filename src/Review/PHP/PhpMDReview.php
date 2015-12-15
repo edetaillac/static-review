@@ -35,10 +35,11 @@ class PhpMDReview extends AbstractReview
         $output = array_filter(explode(PHP_EOL, $process->getOutput()));
         if (!$process->isSuccessful()) {
             foreach ($output as $error) {
-                $error = preg_replace('/:[0-9]*/', '', $error);
+                preg_match('/:([0-9]+)/i', $error, $matches);
+                $line = isset($matches[1]) ? $matches[1] : null;
                 $error = str_replace("\t", ' ', $error);
-                $message = trim(str_replace($file->getFullPath(), '', $error));
-                $reporter->warning($message, $this, $file);
+                $message = trim(str_replace($file->getFullPath().':'.$line, '', $error));
+                $reporter->warning($message, $this, $file, $line);
             }
         }
     }

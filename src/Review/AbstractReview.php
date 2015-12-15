@@ -67,7 +67,7 @@ abstract class AbstractReview implements ReviewInterface
      */
     public function isBlacklistFile(ReviewableInterface $fileName)
     {
-        if (preg_match('/\.js\.php$/', $fileName->getName())) {
+        if (strpos($fileName->getName(), '.js.php') !== false) {
             return true;
         }
 

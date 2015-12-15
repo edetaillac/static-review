@@ -74,7 +74,7 @@ class IssueTest extends TestCase
             $this->issueLevel,
             $this->issueMessage,
             $this->issueReview,
-            null
+            $this->issueReview
         );
     }
 

@@ -27,6 +27,7 @@ This Code Reviewing tool can check:
 > * YML Syntax Error
 > * JSON Syntax Error
 > * JS Syntax Error & auto-fix it
+> * Composer .json validation
 > * Composer Sync .json and .lock files
 
 It optimizes PHP Syntax with specific [php-cs-fixer rules](doc/fixer/php_cs_fixer_rules.md) (See PhpCsFixerReview.php) :

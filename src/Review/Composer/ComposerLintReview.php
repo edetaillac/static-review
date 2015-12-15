@@ -44,8 +44,7 @@ class ComposerLintReview extends AbstractReview
 
         $process = $this->getProcess($cmd);
         $process->run();
-
-        if (!$process->isSuccessful()) {
+        if (!$process->isSuccessful() && (strpos($process->getErrorOutput(), 'composer.json is valid') === false)) {
             $message = 'The composer configuration is not valid';
             $reporter->error($message, $this, $file);
         }

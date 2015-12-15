@@ -34,7 +34,7 @@ class Issue implements IssueInterface
         $level,
         $message,
         ReviewInterface $review,
-        ReviewableInterface $subject,
+        ReviewableInterface $subject = null,
         $line = null
     ) {
         $this->level = $level;
@@ -147,7 +147,7 @@ class Issue implements IssueInterface
      */
     public function __toString()
     {
-        $filename = $this->getSubject()->getName();
+        $filename = $this->getSubject() ? $this->getSubject()->getName() : '';
 
         return sprintf(
             '    • %s%s%s',

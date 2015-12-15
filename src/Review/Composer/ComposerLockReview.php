@@ -1,27 +1,16 @@
 <?php
 
-namespace StaticReview\Review\PHP;
+namespace StaticReview\Review\Composer;
 
+use StaticReview\File\File;
 use StaticReview\Reporter\ReporterInterface;
 use StaticReview\Review\AbstractReview;
 use StaticReview\Review\ReviewableInterface;
 
-class ComposerReview extends AbstractReview
+class ComposerLockReview extends AbstractReview
 {
     private $composerJsonDetected = false;
     private $composerLockDetected = false;
-
-        /**
-         * Determins if a given file should be reviewed.
-         *
-         * @param ReviewableInterface $file
-         *
-         * @return bool
-         */
-        public function canReview(ReviewableInterface $file = null)
-        {
-            return parent::canReview($file) && ($file->getExtension() === 'json' || $file->getExtension() === 'lock');
-        }
 
     /**
      * Checks Composer json and lock files.
@@ -38,7 +27,7 @@ class ComposerReview extends AbstractReview
 
         // Check if we are on the Last File
         if ((($reporter->getCurrent() - 1) == $reporter->getTotal()) && $this->composerJsonDetected && !$this->composerLockDetected) {
-            $reporter->warning('You must commit composer.lock with composer.json', $this, $file);
+            $reporter->warning('You must commit composer.lock with composer.json', $this);
         }
     }
 }
