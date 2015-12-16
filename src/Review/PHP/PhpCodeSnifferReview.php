@@ -80,7 +80,7 @@ class PhpCodeSnifferReview extends AbstractReview
      */
     public function review(ReporterInterface $reporter, ReviewableInterface $file = null)
     {
-        $cmd = 'phpcs --report=json ';
+        $cmd = '~/.composer/vendor/bin/phpcs --report=json ';
 
         if ($this->getOptionsForConsole()) {
             $cmd .= $this->getOptionsForConsole();
