@@ -113,7 +113,7 @@ if [ -d "$COMPOSERPATH" ] && [[ :$PATH: != *:"$COMPOSERPATH":* ]] ; then
         exit 0
 fi
 
-composer install
+composer install --no-dev --optimize-autoloader
 
 # =============================
 # Build pre-commit
