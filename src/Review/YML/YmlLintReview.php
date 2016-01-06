@@ -22,12 +22,19 @@ class YmlLintReview extends AbstractReview
         return parent::canReview($file) && $file->getExtension() === 'yml';
     }
 
+    /**
+     * @param ReporterInterface        $reporter
+     * @param ReviewableInterface|null $file
+     */
     public function review(ReporterInterface $reporter, ReviewableInterface $file = null)
     {
         // delete PHP code in yaml files to avoid ParseException
-        $ymlData = preg_replace("|(<\?php.*\?>)|i", '', file_get_contents($file->getFullPath()));
+        $ymlData = preg_replace('|(<\?php.*\?>)|i', '', file_get_contents($file->getFullPath()));
+        // delete Namespace class on scalar value to avoid ParseException with escape caracter
+        $ymlData = preg_replace('|(:\s*\".*\")|i', ': ""', $ymlData);
         try {
-            Yaml::parse($ymlData);
+            print_r($ymlData);
+            Yaml::parse($ymlData, false, true);
         } catch (ParseException $e) {
             preg_match('/at line ([0-9]+)/i', $e->getMessage(), $matches);
             $line = isset($matches[1]) ? $matches[1] : null;
