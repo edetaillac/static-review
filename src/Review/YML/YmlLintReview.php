@@ -30,10 +30,11 @@ class YmlLintReview extends AbstractReview
     {
         // delete PHP code in yaml files to avoid ParseException
         $ymlData = preg_replace('|(<\?php.*\?>)|i', '', file_get_contents($file->getFullPath()));
-        // delete Namespace class on scalar value to avoid ParseException with escape caracter
-        $ymlData = preg_replace('|(:\s*\".*\")|i', ': ""', $ymlData);
+        // delete Namespace string to avoid ParseException with escape caracter
+        $ymlData = preg_replace('|([\\\]{1}[a-z]+)|i', '', $ymlData);
+        // delete reserved indicator "@" to avoid ParseException
+        $ymlData = preg_replace('|(@)|i', '', $ymlData);
         try {
-            print_r($ymlData);
             Yaml::parse($ymlData, false, true);
         } catch (ParseException $e) {
             preg_match('/at line ([0-9]+)/i', $e->getMessage(), $matches);
