@@ -7,7 +7,6 @@ use StaticReview\Review\Composer\ComposerLintReview;
 use StaticReview\Review\JS\EsLintReview;
 use StaticReview\Review\JSON\JsonLintReview;
 use StaticReview\Review\PHP\PhpLintReview;
-use StaticReview\Review\PHP\PhpCsFixerReview;
 use StaticReview\Review\Composer\ComposerLockReview;
 use StaticReview\Review\PHP\PhpStopWordsReview;
 use StaticReview\Review\PHP\PhpCPDReview;
@@ -84,7 +83,6 @@ class PreCommitCommand extends Command
         $phpCodeSniffer->setOption('sniffs', 'PEAR.Commenting.FunctionComment');
 
         $review->addReview(new PhpCPDReview())
-          ->addReview(new PhpCsFixerReview(self::AUTO_ADD_GIT))
           ->addReview(new PhpMDReview())
           ->addReview($phpCodeSniffer);
         // --------------------------------------------------------
