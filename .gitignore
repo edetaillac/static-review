@@ -2,6 +2,7 @@
 precommit.phar
 box.json
 /.idea
+.php_cs.cache
 =======
 # Project Files & Folders #
 ###########################

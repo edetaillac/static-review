@@ -43,7 +43,7 @@ class PhpUnitReview extends AbstractReview
         }
 
         $cmd = sprintf('export SYMFONY_DEPRECATIONS_HELPER=%s;', self::LEVEL_SYMFONY_DEPRECATION_WEAK);
-        $cmd .= sprintf('%s --stop-on-failure%s', $this->phpUnitBinPath, $this->phpUnitConfigPath ? ' -c '.$this->phpUnitConfigPath : '');
+        $cmd .= sprintf('%s --exclude_group slow --stop-on-failure%s', $this->phpUnitBinPath, $this->phpUnitConfigPath ? ' -c '.$this->phpUnitConfigPath : '');
         $process = $this->getProcess($cmd, $this->projectBase, null, null, 960);
 
         echo "\n";

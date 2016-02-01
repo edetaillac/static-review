@@ -8,8 +8,7 @@ use StaticReview\Review\ReviewableInterface;
 
 class PhpCsFixerReview extends AbstractReview
 {
-    const PHP_CS_FIXER_LEVEL = 'symfony';
-    const PHP_CS_FIXER_FILTERS = 'align_double_arrow,phpdoc_order';
+    const PHP_CS_FIXER_RULE_DIR = '~/.precommitRules/.php_cs';
 
     protected $autoAddGit;
 
@@ -40,13 +39,13 @@ class PhpCsFixerReview extends AbstractReview
      */
     public function review(ReporterInterface $reporter, ReviewableInterface $file = null)
     {
-        $cmd = sprintf('php-cs-fixer fix -v %s --level=%s --fixers=%s', $file->getFullPath(), self::PHP_CS_FIXER_LEVEL, self::PHP_CS_FIXER_FILTERS);
+        $cmd = sprintf('php-cs-fixer fix -v %s --config-file %s', $file->getFullPath(), self::PHP_CS_FIXER_RULE_DIR);
         $process = $this->getProcess($cmd);
         $process->run();
         // Create the array of outputs and remove empty values.
         $output = array_filter(explode(PHP_EOL, $process->getOutput()));
         if (!$process->isSuccessful()) {
-            foreach (array_slice($output, 2, -1) as $error) {
+            foreach (array_slice($output, 3, -1) as $error) {
                 $raw = ucfirst($error);
                 $message = trim(str_replace('   1) '.$file->getFullPath(), '', $raw));
                 $reporter->info($message, $this, $file);
